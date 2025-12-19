@@ -1,0 +1,23 @@
+name: PlatformIO Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup PlatformIO
+        uses: platformio/setup-ci@v2
+      - name: Install dependencies
+        run: pio update
+      - name: Run tests
+        run: pio test
+      - name: Save test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: .pio/test/  # Folder containing test logs
