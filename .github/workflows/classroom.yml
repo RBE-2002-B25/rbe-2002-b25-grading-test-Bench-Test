@@ -1,4 +1,4 @@
-name: PlatformIO Tests
+name: PlatformIO CI & Test
 
 on:
   push:
@@ -8,16 +8,33 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Setup PlatformIO
-        uses: platformio/setup-ci@v2
-      - name: Install dependencies
-        run: pio update
-      - name: Run tests
-        run: pio test
-      - name: Save test results
-        uses: actions/upload-artifact@v3
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          name: test-results
-          path: .pio/test/  # Folder containing test logs
+          python-version: "3.11"
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: ${{ runner.os }}-platformio-${{ hashFiles('**/platformio.ini') }}
+
+      - name: Install PlatformIO
+        run: |
+          python -m pip install --upgrade pip
+          pip install platformio
+
+      - name: Run tests
+        run: |
+          pio test
+
+      - name: Upload test logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: .pio/test
